@@ -8,12 +8,21 @@ import {
   ImageBackground,
   Image,
   Dimensions,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
+  useWindowDimensions,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
 const AranduLoginScreen = ({ onLogin }) => {
+  const { width: winW, height: winH } = useWindowDimensions();
+  const isLandscape = winW > winH;
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
 
@@ -23,7 +32,7 @@ const AranduLoginScreen = ({ onLogin }) => {
     // Dados mockados para login
     if (usuario === 'admin' && senha === 'admin') {
       console.log('Login bem-sucedido!');
-      onLogin(); // Chama a função de login passada como prop
+      if (onLogin) onLogin();
     } else {
       console.log('Credenciais inválidas!');
       alert('Usuário ou senha incorretos!');
@@ -36,81 +45,94 @@ const AranduLoginScreen = ({ onLogin }) => {
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
-        {/* Menu Hamburger */}
-        <TouchableOpacity style={styles.menuButton}>
-          <View style={styles.menuLine} />
-          <View style={styles.menuLine} />
-          <View style={styles.menuLine} />
-        </TouchableOpacity>
+      <SafeAreaView style={styles.overlay}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.kbContainer}>
+            <ScrollView contentContainerStyle={[styles.scrollContent, isLandscape && { paddingBottom: 40 }]} bounces={false} keyboardShouldPersistTaps="handled">
+            {/* Menu Hamburger */}
+            <TouchableOpacity style={styles.menuButton}>
+              <View style={styles.menuLine} />
+              <View style={styles.menuLine} />
+              <View style={styles.menuLine} />
+            </TouchableOpacity>
 
-        {/* Decorações Espaciais */}
-        <View style={styles.decorPlanet}>
-          <View style={styles.planet} />
-          <View style={styles.ring} />
-        </View>
+            {/* Decorações Espaciais */}
+            <View style={styles.decorPlanet}>
+              <View style={styles.planet} />
+              <View style={styles.ring} />
+            </View>
 
-        <View style={styles.decorComet} />
-        <View style={styles.decorEarth} />
+            <View style={styles.decorComet} />
+            <View style={styles.decorEarth} />
 
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>ARANDU</Text>
-          <View style={styles.logoAccent} />
-        </View>
+            {/* Logo */}
+            <View style={[styles.logoContainer, isLandscape && { marginBottom: 30 }]}>
+              <Text style={styles.logoText}>ARANDU</Text>
+              <View style={styles.logoAccent} />
+            </View>
 
-        {/* Formulário */}
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Usuário:</Text>
-          <TextInput
-            style={styles.input}
-            value={usuario}
-            onChangeText={setUsuario}
-            placeholder=""
-            placeholderTextColor="#999"
-          />
+            {/* Formulário */}
+            <View style={[styles.formContainer, isLandscape && { width: '92%', maxWidth: 700 }] }>
+              <Text style={styles.label}>Usuário:</Text>
+              <TextInput
+                style={[styles.input, isLandscape && { paddingVertical: 12 } ]}
+                value={usuario}
+                onChangeText={setUsuario}
+                placeholder="Usuário"
+                placeholderTextColor="#BFC3CF"
+                autoCapitalize="none"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
+                }}
+              />
 
-          <Text style={styles.label}>Senha:</Text>
-          <TextInput
-            style={styles.input}
-            value={senha}
-            onChangeText={setSenha}
-            placeholder=""
-            placeholderTextColor="#999"
-            secureTextEntry
-          />
+              <Text style={styles.label}>Senha:</Text>
+              <TextInput
+                style={[styles.input, isLandscape && { paddingVertical: 12 } ]}
+                value={senha}
+                onChangeText={setSenha}
+                placeholder="Senha"
+                placeholderTextColor="#BFC3CF"
+                secureTextEntry
+                returnKeyType="go"
+                onSubmitEditing={handleLogin}
+              />
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleLogin}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#E91E63', '#C2185B']}
-              style={styles.buttonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <Text style={styles.buttonText}>ENTRAR</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+              <TouchableOpacity
+                style={[styles.button, isLandscape && { alignSelf: 'center', width: '92%', maxWidth: 700 }]}
+                onPress={handleLogin}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['#E91E63', '#C2185B']}
+                  style={[styles.buttonGradient, isLandscape && { paddingVertical: 16 } ]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.buttonText}>ENTRAR</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
 
-        {/* Estrelas decorativas */}
-        {[...Array(20)].map((_, i) => (
-          <View
-            key={i}
-            style={[
-              styles.star,
-              {
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                opacity: Math.random() * 0.5 + 0.3,
-              },
-            ]}
-          />
-        ))}
-      </View>
+            {/* Estrelas decorativas */}
+            {[...Array(20)].map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.star,
+                  {
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    opacity: Math.random() * 0.5 + 0.3,
+                  },
+                , isLandscape && winH < 420 ? { opacity: 0 } : null]}
+              />
+            ))}
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
     </ImageBackground>
   );
 };
@@ -127,6 +149,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+  },
+  kbContainer: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 0,
   },
   menuButton: {
     position: 'absolute',
@@ -215,6 +246,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     paddingHorizontal: 20,
+    alignSelf: 'center',
   },
   label: {
     fontSize: 18,
